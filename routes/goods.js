@@ -3,12 +3,14 @@ const router = express.Router()
 const Cart = require("../schemas/cart");
 const Goods = require("../schemas/goods.js");
 
-router.get("/goods", (req, res) => {
-    res.status(200).json({ goods })
+// 상품 목록 조회
+router.get("/goods", async (req, res) => {
+    const goods = await Goods.find({});
+    return res.status(200).json({ goods })
 })
 
 // 장바구니 조회 API
-router.get("/cart", async (req, res) => {
+router.get("/goods/cart", async (req, res) => {
     const carts = await Cart.find({});
     const goodsIds = carts.map((cart) => cart.goodsId);
 
@@ -27,13 +29,13 @@ router.get("/cart", async (req, res) => {
 });
 
 // 상품 상세 조회 API
-router.get("/goods/:goodsId", (req, res) => {
+router.get("/goods/:goodsId", async (req, res) => {
     const { goodsId } = req.params
+    const goods = await Goods.find({});
 
     let good = null
     good = goods.filter((val) => val.goodsId === Number(goodsId) ? val : null)
 
-    console.log(good)
     res.status(200).json({ "detail": good })
 })
 
@@ -41,7 +43,7 @@ router.get("/goods/:goodsId", (req, res) => {
 router.post("/goods/", async (req, res) => {
     const { goodsId, name, thumbnailUrl, category, price } = req.body;
 
-    console.log(goodsId, name, thumbnailUrl, category, price)
+    //console.log(goodsId, name, thumbnailUrl, category, price)
 
     const goods = await Goods.find({ goodsId });
     if (goods.length) {
