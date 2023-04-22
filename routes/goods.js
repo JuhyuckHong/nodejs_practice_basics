@@ -1,13 +1,32 @@
 const express = require("express")
 const router = express.Router()
-
-
+const Cart = require("../schemas/cart");
+const Goods = require("../schemas/goods.js");
 
 router.get("/goods", (req, res) => {
     res.status(200).json({ goods })
 })
 
-//상품 상세 조회 API
+// 장바구니 조회 API
+router.get("/cart", async (req, res) => {
+    const carts = await Cart.find({});
+    const goodsIds = carts.map((cart) => cart.goodsId);
+
+    const goods = await Goods.find({ goodsId: goodsIds });
+
+    const results = carts.map((cart) => {
+        return {
+            quantity: cart.quantity,
+            goods: goods.find((item) => item.goodsId === cart.goodsId)
+        };
+    });
+
+    res.json({
+        carts: results,
+    });
+});
+
+// 상품 상세 조회 API
 router.get("/goods/:goodsId", (req, res) => {
     const { goodsId } = req.params
 
@@ -18,7 +37,7 @@ router.get("/goods/:goodsId", (req, res) => {
     res.status(200).json({ "detail": good })
 })
 
-const Goods = require("../schemas/goods.js");
+// 물품 등록
 router.post("/goods/", async (req, res) => {
     const { goodsId, name, thumbnailUrl, category, price } = req.body;
 
@@ -35,7 +54,7 @@ router.post("/goods/", async (req, res) => {
 });
 
 
-const Cart = require("../schemas/cart");
+// 장바구니에 물품 담기
 router.post("/goods/:goodsId/cart", async (req, res) => {
     const { goodsId } = req.params;
     const { quantity } = req.body;
@@ -50,9 +69,17 @@ router.post("/goods/:goodsId/cart", async (req, res) => {
     res.json({ result: "success" });
 });
 
+// 장바구니에 담긴 물품 수량 수정
 router.put("/goods/:goodsId/cart", async (req, res) => {
     const { goodsId } = req.params;
     const { quantity } = req.body;
+
+    console.log("quantity", quantity, typeof (quantity))
+
+    if (quantity < 1) {
+        console.log("detected")
+        return res.status(400).json({})
+    }
 
     const existsCarts = await Cart.find({ goodsId: Number(goodsId) });
     if (existsCarts.length) {
@@ -62,6 +89,7 @@ router.put("/goods/:goodsId/cart", async (req, res) => {
     res.json({ success: true });
 })
 
+// 장바구니에 물품 빼기
 router.delete("/goods/:goodsId/cart", async (req, res) => {
     const { goodsId } = req.params;
 

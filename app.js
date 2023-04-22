@@ -1,14 +1,13 @@
 const express = require('express');
 const app = express();
 const port = 3000;
-const cartsRouter = require("./routes/carts")
 const goodsRouter = require("./routes/goods")
 const connect = require("./schemas");
 connect();
 
 
 app.use(express.json())
-app.use("/api", [goodsRouter, cartsRouter])
+app.use("/api", [goodsRouter])
 
 app.get('/', (req, res) => {
     res.send('hi')
